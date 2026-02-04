@@ -53,6 +53,10 @@
             </div>
           </div>
           <div class="hero__card">
+            <div class="category">
+              <p>Elige el tipo de personaje</p>
+              <div class="category__chips" id="categoryChips"></div>
+            </div>
             <div class="confidence">
               <p>Probabilidad de acierto</p>
               <div class="confidence__bar">
@@ -65,6 +69,11 @@
               <h3 id="questionText">Selecciona “Iniciar sesión” para comenzar.</h3>
             </div>
             <div class="answers" id="answers"></div>
+            <div class="guess" id="guessPanel">
+              <h4>¿Listo para revelar?</h4>
+              <p>Activa el modo “Adivinar” cuando el nivel de confianza supere 70%.</p>
+              <button class="primary" id="reveal">Adivinar personaje</button>
+            </div>
             <div class="controls">
               <button class="ghost" id="back">Volver</button>
               <button class="ghost" id="skip">No lo sé</button>
@@ -80,6 +89,7 @@
               <li>Memoria contextual multisesión para un flujo continuo.</li>
               <li>Metapreguntas dinámicas para recortar 40% del tiempo.</li>
               <li>Indicadores de confianza en tiempo real.</li>
+              <li>Curación de perfiles: celebridades, ficción y fauna.</li>
             </ul>
           </div>
           <div class="panel__section">

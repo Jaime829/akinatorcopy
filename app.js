@@ -6,42 +6,64 @@ const logEl = document.getElementById("log");
 const resultEl = document.getElementById("result");
 const confidenceBar = document.getElementById("confidenceBar");
 const confidenceValue = document.getElementById("confidenceValue");
+const categoryChips = document.getElementById("categoryChips");
+const guessPanel = document.getElementById("guessPanel");
 
 const startBtn = document.getElementById("start");
 const backBtn = document.getElementById("back");
 const skipBtn = document.getElementById("skip");
 const restartBtn = document.getElementById("restart");
+const revealBtn = document.getElementById("reveal");
 
 const characters = [
   {
     id: "luna-void",
     name: "Luna Void",
     tag: "Hechicera cósmica",
+    category: "ficción",
     traits: { magia: 9, liderazgo: 6, ciencia: 4, ficcion: 8, real: 2, misterio: 9 },
   },
   {
     id: "neo-axis",
     name: "Neo Axis",
     tag: "Héroe tecnológico",
+    category: "ficción",
     traits: { magia: 2, liderazgo: 7, ciencia: 9, ficcion: 9, real: 3, misterio: 6 },
   },
   {
     id: "valeria-royal",
     name: "Valeria Royal",
     tag: "Líder histórica",
+    category: "celebridad",
     traits: { magia: 1, liderazgo: 9, ciencia: 5, ficcion: 2, real: 8, misterio: 4 },
   },
   {
     id: "atlas-mind",
     name: "Atlas Mind",
     tag: "Estratega científico",
+    category: "celebridad",
     traits: { magia: 1, liderazgo: 7, ciencia: 10, ficcion: 6, real: 6, misterio: 5 },
   },
   {
     id: "maya-echo",
     name: "Maya Echo",
     tag: "Icono cultural",
+    category: "celebridad",
     traits: { magia: 3, liderazgo: 6, ciencia: 4, ficcion: 5, real: 9, misterio: 7 },
+  },
+  {
+    id: "sombra-lince",
+    name: "Sombra Lince",
+    tag: "Animal sigiloso",
+    category: "animal",
+    traits: { magia: 1, liderazgo: 3, ciencia: 2, ficcion: 1, real: 10, misterio: 6 },
+  },
+  {
+    id: "aurora-delfin",
+    name: "Aurora Delfín",
+    tag: "Animal inteligente",
+    category: "animal",
+    traits: { magia: 1, liderazgo: 5, ciencia: 4, ficcion: 1, real: 10, misterio: 5 },
   },
 ];
 
@@ -124,18 +146,19 @@ const state = {
   index: 0,
   answers: [],
   scores: {},
+  category: "todos",
 };
 
 const normalize = (value, min, max) => (value - min) / (max - min);
 
 const buildScores = () => {
   const scores = {};
-  characters.forEach((character) => {
+  getCandidates().forEach((character) => {
     scores[character.id] = 0;
   });
   state.answers.forEach((answer) => {
     const { traits, weight } = answer;
-    characters.forEach((character) => {
+    getCandidates().forEach((character) => {
       let delta = 0;
       Object.entries(traits).forEach(([trait, traitWeight]) => {
         delta += (character.traits[trait] || 0) * traitWeight * weight;
@@ -146,9 +169,16 @@ const buildScores = () => {
   return scores;
 };
 
+const getCandidates = () => {
+  if (state.category === "todos") {
+    return characters;
+  }
+  return characters.filter((character) => character.category === state.category);
+};
+
 const getTopMatches = () => {
   state.scores = buildScores();
-  return characters
+  return getCandidates()
     .map((character) => ({
       ...character,
       score: state.scores[character.id],
@@ -170,6 +200,7 @@ const updateConfidence = () => {
   const percent = Math.round(value * 100);
   confidenceBar.style.width = `${percent}%`;
   confidenceValue.textContent = `${percent}%`;
+  revealBtn.disabled = percent < 70;
 };
 
 const renderLog = () => {
@@ -203,6 +234,14 @@ const renderResult = () => {
       <div class="result__chip"><span>Alternativa 2</span><strong>${third.name}</strong></div>
     </div>
   `;
+};
+
+const renderGuessPanel = () => {
+  const percent = Math.round(confidence() * 100);
+  guessPanel.querySelector("p").textContent =
+    percent >= 70
+      ? "Confianza óptima alcanzada. Pulsa para adivinar."
+      : "Activa el modo “Adivinar” cuando el nivel de confianza supere 70%.";
 };
 
 const renderQuestion = () => {
@@ -242,6 +281,7 @@ const handleAnswer = (option) => {
   updateConfidence();
   renderLog();
   renderResult();
+  renderGuessPanel();
   renderQuestion();
 };
 
@@ -252,6 +292,7 @@ const handleBack = () => {
   updateConfidence();
   renderLog();
   renderResult();
+  renderGuessPanel();
   renderQuestion();
 };
 
@@ -267,7 +308,44 @@ const handleSkip = () => {
   updateConfidence();
   renderLog();
   renderResult();
+  renderGuessPanel();
   renderQuestion();
+};
+
+const revealGuess = () => {
+  const matches = getTopMatches();
+  if (matches.length === 0) return;
+  const [top] = matches;
+  resultEl.innerHTML = `
+    <div class="result__title">${top.name}</div>
+    <p class="result__subtitle">${top.tag} · ${Math.round(confidence() * 100)}% de confianza</p>
+    <div class="result__grid">
+      <div class="result__chip"><span>Tipo</span><strong>${top.category}</strong></div>
+      <div class="result__chip"><span>Perfil</span><strong>Alta coincidencia</strong></div>
+    </div>
+  `;
+};
+
+const renderCategories = () => {
+  const categories = [
+    { id: "todos", label: "Todos" },
+    { id: "celebridad", label: "Famosos" },
+    { id: "ficción", label: "Ficción" },
+    { id: "animal", label: "Animales" },
+  ];
+  categoryChips.innerHTML = "";
+  categories.forEach((category) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = `chip ${state.category === category.id ? "chip--active" : ""}`;
+    chip.textContent = category.label;
+    chip.addEventListener("click", () => {
+      state.category = category.id;
+      reset();
+      renderCategories();
+    });
+    categoryChips.appendChild(chip);
+  });
 };
 
 const reset = () => {
@@ -276,6 +354,7 @@ const reset = () => {
   updateConfidence();
   renderLog();
   renderResult();
+  renderGuessPanel();
   renderQuestion();
 };
 
@@ -283,5 +362,7 @@ startBtn.addEventListener("click", reset);
 restartBtn.addEventListener("click", reset);
 backBtn.addEventListener("click", handleBack);
 skipBtn.addEventListener("click", handleSkip);
+revealBtn.addEventListener("click", revealGuess);
 
+renderCategories();
 reset();
