@@ -8,6 +8,8 @@ const confidenceBar = document.getElementById("confidenceBar");
 const confidenceValue = document.getElementById("confidenceValue");
 const categoryChips = document.getElementById("categoryChips");
 const guessPanel = document.getElementById("guessPanel");
+const customGuessInput = document.getElementById("customGuess");
+const submitGuessBtn = document.getElementById("submitGuess");
 
 const startBtn = document.getElementById("start");
 const backBtn = document.getElementById("back");
@@ -139,8 +141,10 @@ const characters = [
 
 const questions = [
   {
+    id: "real",
     text: "¿Tu personaje existe en el mundo real?",
     traits: { real: 2, ficcion: -2 },
+    categories: ["todos", "celebridad", "ficción", "animal"],
     options: [
       { label: "Sí, es real", weight: 2 },
       { label: "No, es ficticio", weight: -2 },
@@ -148,8 +152,10 @@ const questions = [
     ],
   },
   {
+    id: "animal",
     text: "¿Tu personaje es un animal?",
     traits: { animal: 2 },
+    categories: ["todos", "animal", "ficción", "celebridad"],
     options: [
       { label: "Sí, es un animal", weight: 2 },
       { label: "Tiene rasgos animales", weight: 1 },
@@ -157,8 +163,22 @@ const questions = [
     ],
   },
   {
+    id: "animado",
+    text: "¿Es un personaje animado?",
+    traits: { animado: 2, ficcion: 1 },
+    categories: ["todos", "ficción"],
+    requires: { fiction: true },
+    options: [
+      { label: "Sí", weight: 2 },
+      { label: "Algo", weight: 0.5 },
+      { label: "No", weight: -1 },
+    ],
+  },
+  {
+    id: "musica",
     text: "¿Se relaciona con la música?",
     traits: { musica: 2 },
+    categories: ["todos", "celebridad", "ficción"],
     options: [
       { label: "Sí, principalmente", weight: 2 },
       { label: "Algo", weight: 1 },
@@ -166,8 +186,21 @@ const questions = [
     ],
   },
   {
+    id: "deporte",
+    text: "¿Es reconocido por deportes?",
+    traits: { deporte: 2 },
+    categories: ["todos", "celebridad"],
+    options: [
+      { label: "Sí", weight: 2 },
+      { label: "Algo", weight: 1 },
+      { label: "No", weight: -1 },
+    ],
+  },
+  {
+    id: "cine",
     text: "¿Se asocia con el cine o series?",
     traits: { cine: 2 },
+    categories: ["todos", "celebridad", "ficción"],
     options: [
       { label: "Sí, aparece en pantalla", weight: 2 },
       { label: "Algo", weight: 1 },
@@ -175,8 +208,10 @@ const questions = [
     ],
   },
   {
+    id: "ciencia",
     text: "¿Está ligado a la ciencia o tecnología?",
     traits: { ciencia: 1.5, tecnologia: 1.5 },
+    categories: ["todos", "celebridad", "ficción"],
     options: [
       { label: "Sí, totalmente", weight: 2 },
       { label: "Un poco", weight: 1 },
@@ -184,26 +219,11 @@ const questions = [
     ],
   },
   {
-    text: "¿Es un héroe o figura positiva?",
-    traits: { liderazgo: 1.5, villano: -1 },
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Depende", weight: 0.5 },
-      { label: "No, es más villano", weight: -1 },
-    ],
-  },
-  {
-    text: "¿Es reconocido por deportes?",
-    traits: { deporte: 2 },
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Algo", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
-  },
-  {
+    id: "magia",
     text: "¿Tiene habilidades mágicas o sobrenaturales?",
     traits: { magia: 2 },
+    categories: ["todos", "ficción"],
+    requires: { fiction: true },
     options: [
       { label: "Sí", weight: 2 },
       { label: "Un poco", weight: 1 },
@@ -211,11 +231,25 @@ const questions = [
     ],
   },
   {
-    text: "¿Es un personaje animado?",
-    traits: { animado: 2, ficcion: 1 },
+    id: "villano",
+    text: "¿Tiende a ser un villano o antagonista?",
+    traits: { villano: 2, liderazgo: -0.5 },
+    categories: ["todos", "ficción"],
+    requires: { fiction: true },
     options: [
       { label: "Sí", weight: 2 },
-      { label: "Algo", weight: 0.5 },
+      { label: "A veces", weight: 0.5 },
+      { label: "No", weight: -1 },
+    ],
+  },
+  {
+    id: "liderazgo",
+    text: "¿Es un líder o figura positiva?",
+    traits: { liderazgo: 1.5, villano: -1 },
+    categories: ["todos", "celebridad", "ficción", "animal"],
+    options: [
+      { label: "Sí", weight: 2 },
+      { label: "Depende", weight: 0.5 },
       { label: "No", weight: -1 },
     ],
   },
@@ -226,6 +260,14 @@ const state = {
   answers: [],
   scores: {},
   category: "todos",
+  askedIds: new Set(),
+  currentQuestion: null,
+  signals: {
+    real: null,
+    animal: null,
+    fiction: null,
+    animado: null,
+  },
 };
 
 const normalize = (value, min, max) => (value - min) / (max - min);
@@ -253,6 +295,75 @@ const getCandidates = () => {
     return characters;
   }
   return characters.filter((character) => character.category === state.category);
+};
+
+const updateSignals = (questionId, weight) => {
+  if (questionId === "real") {
+    if (weight >= 1) {
+      state.signals.real = true;
+      state.signals.fiction = false;
+    } else if (weight <= -1) {
+      state.signals.real = false;
+      state.signals.fiction = true;
+    }
+  }
+  if (questionId === "animal") {
+    if (weight >= 1) {
+      state.signals.animal = true;
+    } else if (weight <= -1) {
+      state.signals.animal = false;
+    }
+  }
+  if (questionId === "animado") {
+    if (weight >= 1) {
+      state.signals.animado = true;
+    } else if (weight <= -1) {
+      state.signals.animado = false;
+    }
+  }
+};
+
+const matchesCategory = (question) =>
+  question.categories.includes("todos") || question.categories.includes(state.category);
+
+const meetsRequirements = (question) => {
+  if (!question.requires) return true;
+  return Object.entries(question.requires).every(([key, value]) => state.signals[key] === value);
+};
+
+const getAvailableQuestions = () =>
+  questions.filter(
+    (question) =>
+      !state.askedIds.has(question.id) && matchesCategory(question) && meetsRequirements(question)
+  );
+
+const getTraitVariance = (candidates) => {
+  const variance = {};
+  if (candidates.length === 0) return variance;
+  const traits = Object.keys(candidates[0].traits);
+  traits.forEach((trait) => {
+    const values = candidates.map((candidate) => candidate.traits[trait] || 0);
+    const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const v =
+      values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length;
+    variance[trait] = v;
+  });
+  return variance;
+};
+
+const scoreQuestion = (question, variance) =>
+  Object.entries(question.traits).reduce(
+    (sum, [trait, weight]) => sum + Math.abs(weight) * (variance[trait] || 0),
+    0
+  );
+
+const selectNextQuestion = () => {
+  const available = getAvailableQuestions();
+  if (available.length === 0) return null;
+  const variance = getTraitVariance(getCandidates());
+  return available
+    .map((question) => ({ question, score: scoreQuestion(question, variance) }))
+    .sort((a, b) => b.score - a.score)[0].question;
 };
 
 const getTopMatches = () => {
@@ -306,13 +417,21 @@ const renderResult = () => {
 
   const matches = getTopMatches();
   const [top, second, third] = matches;
+  const alternatives = [second, third].filter(Boolean);
+  const alternativesMarkup = alternatives.length
+    ? `<div class="result__grid">
+      ${alternatives
+        .map(
+          (candidate, index) =>
+            `<div class="result__chip"><span>Alternativa ${index + 1}</span><strong>${candidate.name}</strong></div>`
+        )
+        .join("")}
+    </div>`
+    : "";
   resultEl.innerHTML = `
     <div class="result__title">${top.name}</div>
     <p class="result__subtitle">${top.tag} · ${Math.round(confidence() * 100)}% de confianza</p>
-    <div class="result__grid">
-      <div class="result__chip"><span>Alternativa 1</span><strong>${second.name}</strong></div>
-      <div class="result__chip"><span>Alternativa 2</span><strong>${third.name}</strong></div>
-    </div>
+    ${alternativesMarkup}
   `;
 };
 
@@ -325,16 +444,21 @@ const renderGuessPanel = () => {
 };
 
 const renderQuestion = () => {
-  const current = questions[state.index];
+  if (!state.currentQuestion) {
+    state.currentQuestion = selectNextQuestion();
+  }
+  const current = state.currentQuestion;
   if (!current) {
     questionText.textContent = "Listo. Pulsa Reiniciar para otro personaje.";
     answersEl.innerHTML = "";
+    questionIndex.textContent = state.answers.length;
+    questionTotal.textContent = state.answers.length;
     return;
   }
 
   questionText.textContent = current.text;
-  questionIndex.textContent = state.index + 1;
-  questionTotal.textContent = questions.length;
+  questionIndex.textContent = state.answers.length + 1;
+  questionTotal.textContent = state.answers.length + getAvailableQuestions().length;
 
   answersEl.innerHTML = "";
   current.options.forEach((option) => {
@@ -349,14 +473,35 @@ const renderQuestion = () => {
   backBtn.disabled = state.index === 0;
 };
 
+const rebuildSignalsAndAsked = () => {
+  state.askedIds = new Set();
+  state.signals = {
+    real: null,
+    animal: null,
+    fiction: null,
+    animado: null,
+  };
+  state.answers.forEach((answer) => {
+    if (answer.id) {
+      state.askedIds.add(answer.id);
+      updateSignals(answer.id, answer.weight);
+    }
+  });
+};
+
 const handleAnswer = (option) => {
-  const current = questions[state.index];
+  const current = state.currentQuestion;
+  if (!current) return;
   state.answers.push({
+    id: current.id,
     text: current.text,
     option: option.label,
     traits: current.traits,
     weight: option.weight,
   });
+  state.askedIds.add(current.id);
+  updateSignals(current.id, option.weight);
+  state.currentQuestion = null;
   state.index += 1;
   updateConfidence();
   renderLog();
@@ -369,6 +514,8 @@ const handleBack = () => {
   if (state.index === 0) return;
   state.index -= 1;
   state.answers.pop();
+  rebuildSignalsAndAsked();
+  state.currentQuestion = null;
   updateConfidence();
   renderLog();
   renderResult();
@@ -377,13 +524,17 @@ const handleBack = () => {
 };
 
 const handleSkip = () => {
-  const current = questions[state.index];
+  const current = state.currentQuestion;
+  if (!current) return;
   state.answers.push({
+    id: current.id,
     text: current.text,
     option: "No lo sé",
     traits: current.traits,
     weight: 0,
   });
+  state.askedIds.add(current.id);
+  state.currentQuestion = null;
   state.index += 1;
   updateConfidence();
   renderLog();
@@ -404,6 +555,24 @@ const revealGuess = () => {
       <div class="result__chip"><span>Perfil</span><strong>Alta coincidencia</strong></div>
     </div>
   `;
+};
+
+const submitCustomGuess = () => {
+  const value = customGuessInput.value.trim();
+  if (!value) return;
+  resultEl.innerHTML = `
+    <div class="result__title">${value}</div>
+    <p class="result__subtitle">Registrado como nuevo objetivo. Ajustaremos el modelo con tu aporte.</p>
+    <div class="result__grid">
+      <div class="result__chip"><span>Estado</span><strong>En revisión</strong></div>
+      <div class="result__chip"><span>Confianza</span><strong>En aprendizaje</strong></div>
+    </div>
+  `;
+  const item = document.createElement("div");
+  item.className = "log__item";
+  item.textContent = `“Nombre enviado” → ${value}`;
+  logEl.prepend(item);
+  customGuessInput.value = "";
 };
 
 const renderCategories = () => {
@@ -431,6 +600,14 @@ const renderCategories = () => {
 const reset = () => {
   state.index = 0;
   state.answers = [];
+  state.askedIds = new Set();
+  state.currentQuestion = null;
+  state.signals = {
+    real: null,
+    animal: null,
+    fiction: null,
+    animado: null,
+  };
   updateConfidence();
   renderLog();
   renderResult();
@@ -443,6 +620,12 @@ restartBtn.addEventListener("click", reset);
 backBtn.addEventListener("click", handleBack);
 skipBtn.addEventListener("click", handleSkip);
 revealBtn.addEventListener("click", revealGuess);
+submitGuessBtn.addEventListener("click", submitCustomGuess);
+customGuessInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    submitCustomGuess();
+  }
+});
 
 renderCategories();
 reset();

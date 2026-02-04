@@ -65,7 +65,7 @@
               <strong id="confidenceValue">0%</strong>
             </div>
             <div class="question">
-              <p class="question__index">Pregunta <span id="questionIndex">1</span> de <span id="questionTotal">9</span></p>
+              <p class="question__index">Pregunta <span id="questionIndex">1</span> de <span id="questionTotal">—</span></p>
               <h3 id="questionText">Selecciona “Iniciar sesión” para comenzar.</h3>
             </div>
             <div class="answers" id="answers"></div>
@@ -73,6 +73,14 @@
               <h4>¿Listo para revelar?</h4>
               <p>Activa el modo “Adivinar” cuando el nivel de confianza supere 70%.</p>
               <button class="primary" id="reveal">Adivinar personaje</button>
+            </div>
+            <div class="custom-guess">
+              <h4>¿Tu personaje no está en la lista?</h4>
+              <p>Escribe el nombre y el oráculo ajustará su perfil para futuras sesiones.</p>
+              <div class="custom-guess__field">
+                <input id="customGuess" type="text" placeholder="Ej: Frida Kahlo, Goku, Lobo ártico" />
+                <button class="ghost" id="submitGuess">Enviar</button>
+              </div>
             </div>
             <div class="controls">
               <button class="ghost" id="back">Volver</button>
