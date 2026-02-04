@@ -10,10 +10,13 @@ const categoryChips = document.getElementById("categoryChips");
 const guessPanel = document.getElementById("guessPanel");
 const customGuessInput = document.getElementById("customGuess");
 const submitGuessBtn = document.getElementById("submitGuess");
+const customGuessPanel = document.getElementById("customGuessPanel");
+const guessActions = document.getElementById("guessActions");
+const confirmYesBtn = document.getElementById("confirmYes");
+const confirmNoBtn = document.getElementById("confirmNo");
 
 const startBtn = document.getElementById("start");
 const backBtn = document.getElementById("back");
-const skipBtn = document.getElementById("skip");
 const restartBtn = document.getElementById("restart");
 const revealBtn = document.getElementById("reveal");
 
@@ -139,28 +142,26 @@ const characters = [
   },
 ];
 
+const answerOptions = [
+  { label: "Sí", weight: 2 },
+  { label: "Probablemente", weight: 1 },
+  { label: "No lo sé", weight: 0 },
+  { label: "Probablemente no", weight: -1 },
+  { label: "No", weight: -2 },
+];
+
 const questions = [
   {
     id: "real",
     text: "¿Tu personaje existe en el mundo real?",
     traits: { real: 2, ficcion: -2 },
     categories: ["todos", "celebridad", "ficción", "animal"],
-    options: [
-      { label: "Sí, es real", weight: 2 },
-      { label: "No, es ficticio", weight: -2 },
-      { label: "Mezcla de ambos", weight: 0.5 },
-    ],
   },
   {
     id: "animal",
     text: "¿Tu personaje es un animal?",
     traits: { animal: 2 },
     categories: ["todos", "animal", "ficción", "celebridad"],
-    options: [
-      { label: "Sí, es un animal", weight: 2 },
-      { label: "Tiene rasgos animales", weight: 1 },
-      { label: "No", weight: -2 },
-    ],
   },
   {
     id: "animado",
@@ -168,55 +169,30 @@ const questions = [
     traits: { animado: 2, ficcion: 1 },
     categories: ["todos", "ficción"],
     requires: { fiction: true },
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Algo", weight: 0.5 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "musica",
     text: "¿Se relaciona con la música?",
     traits: { musica: 2 },
     categories: ["todos", "celebridad", "ficción"],
-    options: [
-      { label: "Sí, principalmente", weight: 2 },
-      { label: "Algo", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "deporte",
     text: "¿Es reconocido por deportes?",
     traits: { deporte: 2 },
     categories: ["todos", "celebridad"],
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Algo", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "cine",
     text: "¿Se asocia con el cine o series?",
     traits: { cine: 2 },
     categories: ["todos", "celebridad", "ficción"],
-    options: [
-      { label: "Sí, aparece en pantalla", weight: 2 },
-      { label: "Algo", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "ciencia",
     text: "¿Está ligado a la ciencia o tecnología?",
     traits: { ciencia: 1.5, tecnologia: 1.5 },
     categories: ["todos", "celebridad", "ficción"],
-    options: [
-      { label: "Sí, totalmente", weight: 2 },
-      { label: "Un poco", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "magia",
@@ -224,11 +200,6 @@ const questions = [
     traits: { magia: 2 },
     categories: ["todos", "ficción"],
     requires: { fiction: true },
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Un poco", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "villano",
@@ -236,22 +207,24 @@ const questions = [
     traits: { villano: 2, liderazgo: -0.5 },
     categories: ["todos", "ficción"],
     requires: { fiction: true },
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "A veces", weight: 0.5 },
-      { label: "No", weight: -1 },
-    ],
   },
   {
     id: "liderazgo",
     text: "¿Es un líder o figura positiva?",
     traits: { liderazgo: 1.5, villano: -1 },
     categories: ["todos", "celebridad", "ficción", "animal"],
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Depende", weight: 0.5 },
-      { label: "No", weight: -1 },
-    ],
+  },
+  {
+    id: "humano",
+    text: "¿Es humano?",
+    traits: { real: 1.5, animal: -1, ficcion: 0.5 },
+    categories: ["todos", "celebridad", "ficción"],
+  },
+  {
+    id: "epoca",
+    text: "¿Es una figura contemporánea?",
+    traits: { tecnologia: 1, ciencia: 0.5, cine: 0.5, musica: 0.5 },
+    categories: ["todos", "celebridad", "ficción"],
   },
 ];
 
@@ -268,6 +241,7 @@ const state = {
     fiction: null,
     animado: null,
   },
+  probabilities: {},
 };
 
 const normalize = (value, min, max) => (value - min) / (max - min);
@@ -288,6 +262,38 @@ const buildScores = () => {
     });
   });
   return scores;
+};
+
+const initializeProbabilities = () => {
+  const candidates = getCandidates();
+  const initial = 1 / Math.max(1, candidates.length);
+  state.probabilities = {};
+  candidates.forEach((character) => {
+    state.probabilities[character.id] = initial;
+  });
+};
+
+const updateProbabilities = (question, weight) => {
+  if (!question || weight === 0) return;
+  const candidates = getCandidates();
+  const scale = 18;
+  let total = 0;
+  candidates.forEach((character) => {
+    const score = Object.entries(question.traits).reduce(
+      (sum, [trait, traitWeight]) =>
+        sum + (character.traits[trait] || 0) * traitWeight,
+      0
+    );
+    const likelihood = Math.exp((score * weight) / scale);
+    state.probabilities[character.id] =
+      (state.probabilities[character.id] || 0) * likelihood;
+    total += state.probabilities[character.id];
+  });
+  if (total > 0) {
+    candidates.forEach((character) => {
+      state.probabilities[character.id] /= total;
+    });
+  }
 };
 
 const getCandidates = () => {
@@ -367,23 +373,23 @@ const selectNextQuestion = () => {
 };
 
 const getTopMatches = () => {
-  state.scores = buildScores();
-  return getCandidates()
+  const candidates = getCandidates();
+  if (Object.keys(state.probabilities).length === 0) {
+    initializeProbabilities();
+  }
+  return candidates
     .map((character) => ({
       ...character,
-      score: state.scores[character.id],
+      probability: state.probabilities[character.id] || 0,
     }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.probability - a.probability);
 };
 
 const confidence = () => {
   const matches = getTopMatches();
-  if (matches.length < 2) return 0;
-  const top = matches[0].score;
-  const second = matches[1].score;
-  const normalized = normalize(top - second, -40, 120);
-  const progress = normalize(state.answers.length, 0, questions.length);
-  return Math.max(0, Math.min(0.99, normalized * 0.75 + progress * 0.25));
+  if (matches.length === 0) return 0;
+  const top = matches[0].probability;
+  return Math.max(0, Math.min(0.99, top));
 };
 
 const updateConfidence = () => {
@@ -391,7 +397,7 @@ const updateConfidence = () => {
   const percent = Math.round(value * 100);
   confidenceBar.style.width = `${percent}%`;
   confidenceValue.textContent = `${percent}%`;
-  revealBtn.disabled = percent < 70;
+  revealBtn.disabled = percent < 85;
 };
 
 const renderLog = () => {
@@ -409,7 +415,7 @@ const renderLog = () => {
 };
 
 const renderResult = () => {
-  if (state.answers.length < 3) {
+  if (state.answers.length < 2) {
     resultEl.innerHTML =
       "<p>Tu personaje aparecerá aquí cuando tengamos suficiente información.</p>";
     return;
@@ -430,7 +436,7 @@ const renderResult = () => {
     : "";
   resultEl.innerHTML = `
     <div class="result__title">${top.name}</div>
-    <p class="result__subtitle">${top.tag} · ${Math.round(confidence() * 100)}% de confianza</p>
+    <p class="result__subtitle">${top.tag} · ${Math.round((top.probability || 0) * 100)}% de confianza</p>
     ${alternativesMarkup}
   `;
 };
@@ -438,9 +444,9 @@ const renderResult = () => {
 const renderGuessPanel = () => {
   const percent = Math.round(confidence() * 100);
   guessPanel.querySelector("p").textContent =
-    percent >= 70
+    percent >= 85
       ? "Confianza óptima alcanzada. Pulsa para adivinar."
-      : "Activa el modo “Adivinar” cuando el nivel de confianza supere 70%.";
+      : "Activa el modo “Adivinar” cuando el nivel de confianza supere 85%.";
 };
 
 const renderQuestion = () => {
@@ -461,7 +467,7 @@ const renderQuestion = () => {
   questionTotal.textContent = state.answers.length + getAvailableQuestions().length;
 
   answersEl.innerHTML = "";
-  current.options.forEach((option) => {
+  answerOptions.forEach((option) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "answer";
@@ -481,10 +487,15 @@ const rebuildSignalsAndAsked = () => {
     fiction: null,
     animado: null,
   };
+  initializeProbabilities();
   state.answers.forEach((answer) => {
     if (answer.id) {
       state.askedIds.add(answer.id);
       updateSignals(answer.id, answer.weight);
+      const question = questions.find((item) => item.id === answer.id);
+      if (question) {
+        updateProbabilities(question, answer.weight);
+      }
     }
   });
 };
@@ -501,6 +512,7 @@ const handleAnswer = (option) => {
   });
   state.askedIds.add(current.id);
   updateSignals(current.id, option.weight);
+  updateProbabilities(current, option.weight);
   state.currentQuestion = null;
   state.index += 1;
   updateConfidence();
@@ -523,38 +535,19 @@ const handleBack = () => {
   renderQuestion();
 };
 
-const handleSkip = () => {
-  const current = state.currentQuestion;
-  if (!current) return;
-  state.answers.push({
-    id: current.id,
-    text: current.text,
-    option: "No lo sé",
-    traits: current.traits,
-    weight: 0,
-  });
-  state.askedIds.add(current.id);
-  state.currentQuestion = null;
-  state.index += 1;
-  updateConfidence();
-  renderLog();
-  renderResult();
-  renderGuessPanel();
-  renderQuestion();
-};
-
 const revealGuess = () => {
   const matches = getTopMatches();
   if (matches.length === 0) return;
   const [top] = matches;
   resultEl.innerHTML = `
     <div class="result__title">${top.name}</div>
-    <p class="result__subtitle">${top.tag} · ${Math.round(confidence() * 100)}% de confianza</p>
+    <p class="result__subtitle">${top.tag} · ${Math.round((top.probability || 0) * 100)}% de confianza</p>
     <div class="result__grid">
       <div class="result__chip"><span>Tipo</span><strong>${top.category}</strong></div>
       <div class="result__chip"><span>Perfil</span><strong>Alta coincidencia</strong></div>
     </div>
   `;
+  guessActions.classList.remove("hidden");
 };
 
 const submitCustomGuess = () => {
@@ -573,6 +566,23 @@ const submitCustomGuess = () => {
   item.textContent = `“Nombre enviado” → ${value}`;
   logEl.prepend(item);
   customGuessInput.value = "";
+  customGuessPanel.classList.add("hidden");
+  guessActions.classList.add("hidden");
+};
+
+const confirmGuess = (isCorrect) => {
+  if (isCorrect) {
+    const matches = getTopMatches();
+    const [top] = matches;
+    resultEl.innerHTML = `
+      <div class="result__title">¡Acertado!</div>
+      <p class="result__subtitle">El personaje era ${top?.name || "tu personaje"}.</p>
+    `;
+    guessActions.classList.add("hidden");
+    customGuessPanel.classList.add("hidden");
+    return;
+  }
+  customGuessPanel.classList.remove("hidden");
 };
 
 const renderCategories = () => {
@@ -608,6 +618,9 @@ const reset = () => {
     fiction: null,
     animado: null,
   };
+  initializeProbabilities();
+  guessActions.classList.add("hidden");
+  customGuessPanel.classList.add("hidden");
   updateConfidence();
   renderLog();
   renderResult();
@@ -618,7 +631,6 @@ const reset = () => {
 startBtn.addEventListener("click", reset);
 restartBtn.addEventListener("click", reset);
 backBtn.addEventListener("click", handleBack);
-skipBtn.addEventListener("click", handleSkip);
 revealBtn.addEventListener("click", revealGuess);
 submitGuessBtn.addEventListener("click", submitCustomGuess);
 customGuessInput.addEventListener("keydown", (event) => {
@@ -626,6 +638,8 @@ customGuessInput.addEventListener("keydown", (event) => {
     submitCustomGuess();
   }
 });
+confirmYesBtn.addEventListener("click", () => confirmGuess(true));
+confirmNoBtn.addEventListener("click", () => confirmGuess(false));
 
 renderCategories();
 reset();

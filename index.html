@@ -66,15 +66,19 @@
             </div>
             <div class="question">
               <p class="question__index">Pregunta <span id="questionIndex">1</span> de <span id="questionTotal">—</span></p>
-              <h3 id="questionText">Selecciona “Iniciar sesión” para comenzar.</h3>
+              <h3 id="questionText">¿El personaje es real?</h3>
             </div>
             <div class="answers" id="answers"></div>
             <div class="guess" id="guessPanel">
               <h4>¿Listo para revelar?</h4>
-              <p>Activa el modo “Adivinar” cuando el nivel de confianza supere 70%.</p>
+              <p>Activa el modo “Adivinar” cuando el nivel de confianza supere 85%.</p>
               <button class="primary" id="reveal">Adivinar personaje</button>
+              <div class="guess__actions hidden" id="guessActions">
+                <button class="primary" id="confirmYes">Sí, acertaste</button>
+                <button class="ghost" id="confirmNo">No, te equivocaste</button>
+              </div>
             </div>
-            <div class="custom-guess">
+            <div class="custom-guess hidden" id="customGuessPanel">
               <h4>¿Tu personaje no está en la lista?</h4>
               <p>Escribe el nombre y el oráculo ajustará su perfil para futuras sesiones.</p>
               <div class="custom-guess__field">
@@ -84,7 +88,6 @@
             </div>
             <div class="controls">
               <button class="ghost" id="back">Volver</button>
-              <button class="ghost" id="skip">No lo sé</button>
             </div>
           </div>
         </section>
