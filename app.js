@@ -17,59 +17,129 @@ const revealBtn = document.getElementById("reveal");
 
 const characters = [
   {
-    id: "luna-void",
-    name: "Luna Void",
-    tag: "Hechicera cósmica",
-    category: "ficción",
-    traits: { magia: 9, liderazgo: 6, ciencia: 4, ficcion: 8, real: 2, misterio: 9 },
+    id: "messi",
+    name: "Lionel Messi",
+    tag: "Futbolista legendario",
+    category: "celebridad",
+    traits: { real: 10, ficcion: 0, animal: 0, deporte: 10, musica: 0, cine: 0, ciencia: 0, tecnologia: 3, liderazgo: 8, magia: 1, villano: 0, animado: 0 },
   },
   {
-    id: "neo-axis",
-    name: "Neo Axis",
+    id: "swift",
+    name: "Taylor Swift",
+    tag: "Cantautora global",
+    category: "celebridad",
+    traits: { real: 10, ficcion: 0, animal: 0, deporte: 1, musica: 10, cine: 4, ciencia: 1, tecnologia: 3, liderazgo: 7, magia: 1, villano: 0, animado: 0 },
+  },
+  {
+    id: "einstein",
+    name: "Albert Einstein",
+    tag: "Científico histórico",
+    category: "celebridad",
+    traits: { real: 10, ficcion: 0, animal: 0, deporte: 0, musica: 2, cine: 0, ciencia: 10, tecnologia: 6, liderazgo: 6, magia: 0, villano: 0, animado: 0 },
+  },
+  {
+    id: "curie",
+    name: "Marie Curie",
+    tag: "Pionera de la ciencia",
+    category: "celebridad",
+    traits: { real: 10, ficcion: 0, animal: 0, deporte: 0, musica: 1, cine: 0, ciencia: 10, tecnologia: 6, liderazgo: 7, magia: 0, villano: 0, animado: 0 },
+  },
+  {
+    id: "rock",
+    name: "Dwayne Johnson",
+    tag: "Actor y atleta",
+    category: "celebridad",
+    traits: { real: 10, ficcion: 0, animal: 0, deporte: 7, musica: 1, cine: 8, ciencia: 1, tecnologia: 3, liderazgo: 7, magia: 0, villano: 1, animado: 0 },
+  },
+  {
+    id: "beyonce",
+    name: "Beyoncé",
+    tag: "Icono musical",
+    category: "celebridad",
+    traits: { real: 10, ficcion: 0, animal: 0, deporte: 1, musica: 10, cine: 3, ciencia: 0, tecnologia: 2, liderazgo: 8, magia: 1, villano: 0, animado: 0 },
+  },
+  {
+    id: "gandalf",
+    name: "Gandalf",
+    tag: "Mago legendario",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 0, deporte: 0, musica: 1, cine: 6, ciencia: 2, tecnologia: 1, liderazgo: 9, magia: 10, villano: 0, animado: 0 },
+  },
+  {
+    id: "harry",
+    name: "Harry Potter",
+    tag: "Héroe mágico",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 0, deporte: 3, musica: 0, cine: 8, ciencia: 1, tecnologia: 1, liderazgo: 7, magia: 9, villano: 0, animado: 0 },
+  },
+  {
+    id: "ironman",
+    name: "Iron Man",
     tag: "Héroe tecnológico",
     category: "ficción",
-    traits: { magia: 2, liderazgo: 7, ciencia: 9, ficcion: 9, real: 3, misterio: 6 },
+    traits: { real: 0, ficcion: 10, animal: 0, deporte: 2, musica: 1, cine: 10, ciencia: 8, tecnologia: 10, liderazgo: 8, magia: 1, villano: 0, animado: 0 },
   },
   {
-    id: "valeria-royal",
-    name: "Valeria Royal",
-    tag: "Líder histórica",
-    category: "celebridad",
-    traits: { magia: 1, liderazgo: 9, ciencia: 5, ficcion: 2, real: 8, misterio: 4 },
+    id: "vader",
+    name: "Darth Vader",
+    tag: "Villano icónico",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 0, deporte: 2, musica: 0, cine: 10, ciencia: 6, tecnologia: 7, liderazgo: 9, magia: 6, villano: 10, animado: 0 },
   },
   {
-    id: "atlas-mind",
-    name: "Atlas Mind",
-    tag: "Estratega científico",
-    category: "celebridad",
-    traits: { magia: 1, liderazgo: 7, ciencia: 10, ficcion: 6, real: 6, misterio: 5 },
+    id: "hermione",
+    name: "Hermione Granger",
+    tag: "Estratega brillante",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 0, deporte: 2, musica: 0, cine: 7, ciencia: 6, tecnologia: 2, liderazgo: 7, magia: 9, villano: 0, animado: 0 },
   },
   {
-    id: "maya-echo",
-    name: "Maya Echo",
-    tag: "Icono cultural",
-    category: "celebridad",
-    traits: { magia: 3, liderazgo: 6, ciencia: 4, ficcion: 5, real: 9, misterio: 7 },
+    id: "spiderman",
+    name: "Spider-Man",
+    tag: "Héroe urbano",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 0, deporte: 6, musica: 0, cine: 10, ciencia: 6, tecnologia: 5, liderazgo: 6, magia: 1, villano: 0, animado: 0 },
   },
   {
-    id: "sombra-lince",
-    name: "Sombra Lince",
-    tag: "Animal sigiloso",
+    id: "mickey",
+    name: "Mickey Mouse",
+    tag: "Ícono animado",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 6, deporte: 2, musica: 6, cine: 9, ciencia: 0, tecnologia: 1, liderazgo: 6, magia: 3, villano: 0, animado: 10 },
+  },
+  {
+    id: "simba",
+    name: "Simba",
+    tag: "Rey león",
+    category: "ficción",
+    traits: { real: 0, ficcion: 10, animal: 10, deporte: 4, musica: 5, cine: 8, ciencia: 0, tecnologia: 0, liderazgo: 8, magia: 2, villano: 0, animado: 9 },
+  },
+  {
+    id: "tiger",
+    name: "Tigre de Bengala",
+    tag: "Depredador elegante",
     category: "animal",
-    traits: { magia: 1, liderazgo: 3, ciencia: 2, ficcion: 1, real: 10, misterio: 6 },
+    traits: { real: 10, ficcion: 0, animal: 10, deporte: 4, musica: 0, cine: 0, ciencia: 2, tecnologia: 0, liderazgo: 6, magia: 0, villano: 0, animado: 0 },
   },
   {
-    id: "aurora-delfin",
-    name: "Aurora Delfín",
+    id: "dolphin",
+    name: "Delfín nariz de botella",
     tag: "Animal inteligente",
     category: "animal",
-    traits: { magia: 1, liderazgo: 5, ciencia: 4, ficcion: 1, real: 10, misterio: 5 },
+    traits: { real: 10, ficcion: 0, animal: 10, deporte: 3, musica: 1, cine: 0, ciencia: 3, tecnologia: 0, liderazgo: 5, magia: 0, villano: 0, animado: 0 },
+  },
+  {
+    id: "eagle",
+    name: "Águila real",
+    tag: "Ave majestuosa",
+    category: "animal",
+    traits: { real: 10, ficcion: 0, animal: 10, deporte: 4, musica: 0, cine: 0, ciencia: 2, tecnologia: 0, liderazgo: 4, magia: 0, villano: 0, animado: 0 },
   },
 ];
 
 const questions = [
   {
-    text: "¿Tu personaje es real o histórico?",
+    text: "¿Tu personaje existe en el mundo real?",
     traits: { real: 2, ficcion: -2 },
     options: [
       { label: "Sí, es real", weight: 2 },
@@ -78,65 +148,74 @@ const questions = [
     ],
   },
   {
-    text: "¿Se asocia con tecnología o ciencia avanzada?",
-    traits: { ciencia: 2 },
+    text: "¿Tu personaje es un animal?",
+    traits: { animal: 2 },
     options: [
-      { label: "Totalmente", weight: 2 },
-      { label: "A veces", weight: 1 },
-      { label: "Casi nunca", weight: -1 },
-    ],
-  },
-  {
-    text: "¿Tiene liderazgo reconocido?",
-    traits: { liderazgo: 2 },
-    options: [
-      { label: "Sí, es líder", weight: 2 },
-      { label: "Liderazgo parcial", weight: 1 },
-      { label: "No", weight: -1 },
-    ],
-  },
-  {
-    text: "¿Está rodeado de misterio o aura mística?",
-    traits: { misterio: 2, magia: 1 },
-    options: [
-      { label: "Muy misterioso", weight: 2 },
-      { label: "Algo", weight: 1 },
-      { label: "Nada", weight: -1 },
-    ],
-  },
-  {
-    text: "¿Usa o controla poderes sobrenaturales?",
-    traits: { magia: 2 },
-    options: [
-      { label: "Sí", weight: 2 },
-      { label: "Solo en momentos clave", weight: 1 },
+      { label: "Sí, es un animal", weight: 2 },
+      { label: "Tiene rasgos animales", weight: 1 },
       { label: "No", weight: -2 },
     ],
   },
   {
-    text: "¿Su historia es futurista?",
-    traits: { ficcion: 1.5, ciencia: 1 },
+    text: "¿Se relaciona con la música?",
+    traits: { musica: 2 },
     options: [
-      { label: "Sí, futurista", weight: 2 },
-      { label: "Tiene elementos modernos", weight: 0.5 },
+      { label: "Sí, principalmente", weight: 2 },
+      { label: "Algo", weight: 1 },
       { label: "No", weight: -1 },
     ],
   },
   {
-    text: "¿Es una figura mediática o cultural?",
-    traits: { real: 1, liderazgo: 1 },
+    text: "¿Se asocia con el cine o series?",
+    traits: { cine: 2 },
     options: [
-      { label: "Sí, ícono", weight: 2 },
-      { label: "En un nicho", weight: 1 },
+      { label: "Sí, aparece en pantalla", weight: 2 },
+      { label: "Algo", weight: 1 },
       { label: "No", weight: -1 },
     ],
   },
   {
-    text: "¿Su motivación principal es proteger a otros?",
-    traits: { liderazgo: 1, misterio: 0.5 },
+    text: "¿Está ligado a la ciencia o tecnología?",
+    traits: { ciencia: 1.5, tecnologia: 1.5 },
     options: [
-      { label: "Definitivamente", weight: 2 },
+      { label: "Sí, totalmente", weight: 2 },
+      { label: "Un poco", weight: 1 },
+      { label: "No", weight: -1 },
+    ],
+  },
+  {
+    text: "¿Es un héroe o figura positiva?",
+    traits: { liderazgo: 1.5, villano: -1 },
+    options: [
+      { label: "Sí", weight: 2 },
       { label: "Depende", weight: 0.5 },
+      { label: "No, es más villano", weight: -1 },
+    ],
+  },
+  {
+    text: "¿Es reconocido por deportes?",
+    traits: { deporte: 2 },
+    options: [
+      { label: "Sí", weight: 2 },
+      { label: "Algo", weight: 1 },
+      { label: "No", weight: -1 },
+    ],
+  },
+  {
+    text: "¿Tiene habilidades mágicas o sobrenaturales?",
+    traits: { magia: 2 },
+    options: [
+      { label: "Sí", weight: 2 },
+      { label: "Un poco", weight: 1 },
+      { label: "No", weight: -1 },
+    ],
+  },
+  {
+    text: "¿Es un personaje animado?",
+    traits: { animado: 2, ficcion: 1 },
+    options: [
+      { label: "Sí", weight: 2 },
+      { label: "Algo", weight: 0.5 },
       { label: "No", weight: -1 },
     ],
   },
@@ -191,8 +270,9 @@ const confidence = () => {
   if (matches.length < 2) return 0;
   const top = matches[0].score;
   const second = matches[1].score;
-  const normalized = normalize(top - second, -50, 80);
-  return Math.max(0, Math.min(0.99, normalized));
+  const normalized = normalize(top - second, -40, 120);
+  const progress = normalize(state.answers.length, 0, questions.length);
+  return Math.max(0, Math.min(0.99, normalized * 0.75 + progress * 0.25));
 };
 
 const updateConfidence = () => {
