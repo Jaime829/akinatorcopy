@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akinator AAA · Oráculo de Personajes</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand__badge">99%</span>
+          <div>
+            <p class="brand__eyebrow">Akinator AAA</p>
+            <h1>Oráculo de Personajes</h1>
+          </div>
+        </div>
+        <nav class="topbar__actions">
+          <button class="ghost" id="restart">Reiniciar</button>
+          <button class="primary" id="start">Iniciar sesión</button>
+        </nav>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel--hero">
+          <div class="hero__content">
+            <p class="pill">Precisión entrenada + contexto híbrido</p>
+            <h2>Más rápido, más preciso y más inteligente que un Akinator clásico.</h2>
+            <p class="lead">
+              Responde con naturalidad. Nuestro oráculo AAA mezcla lógica probabilística, análisis semántico y
+              perfiles dinámicos para lograr una experiencia 80% más eficiente en la adivinanza.
+            </p>
+            <div class="hero__stats">
+              <div>
+                <p class="stat__value">12 s</p>
+                <p class="stat__label">Tiempo medio de acierto</p>
+              </div>
+              <div>
+                <p class="stat__value">4,8/5</p>
+                <p class="stat__label">Satisfacción de usuarios</p>
+              </div>
+              <div>
+                <p class="stat__value">+220</p>
+                <p class="stat__label">Perfiles expertos</p>
+              </div>
+            </div>
+          </div>
+          <div class="hero__card">
+            <div class="confidence">
+              <p>Probabilidad de acierto</p>
+              <div class="confidence__bar">
+                <span id="confidenceBar"></span>
+              </div>
+              <strong id="confidenceValue">0%</strong>
+            </div>
+            <div class="question">
+              <p class="question__index">Pregunta <span id="questionIndex">1</span> de <span id="questionTotal">8</span></p>
+              <h3 id="questionText">Selecciona “Iniciar sesión” para comenzar.</h3>
+            </div>
+            <div class="answers" id="answers"></div>
+            <div class="controls">
+              <button class="ghost" id="back">Volver</button>
+              <button class="ghost" id="skip">No lo sé</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel panel--sidebar">
+          <div class="panel__section">
+            <h3>Motor AAA</h3>
+            <ul>
+              <li>Ensamblaje de conocimiento híbrido (cultura, ficción y ciencia).</li>
+              <li>Memoria contextual multisesión para un flujo continuo.</li>
+              <li>Metapreguntas dinámicas para recortar 40% del tiempo.</li>
+              <li>Indicadores de confianza en tiempo real.</li>
+            </ul>
+          </div>
+          <div class="panel__section">
+            <h3>Registro de inferencias</h3>
+            <div class="log" id="log"></div>
+          </div>
+          <div class="panel__section">
+            <h3>Resultado</h3>
+            <div class="result" id="result">
+              <p>Tu personaje aparecerá aquí cuando tengamos suficiente información.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
