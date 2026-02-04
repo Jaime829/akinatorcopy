@@ -240,6 +240,7 @@ const state = {
     animal: null,
     fiction: null,
     animado: null,
+    humano: null,
   },
   probabilities: {},
 };
@@ -316,6 +317,7 @@ const updateSignals = (questionId, weight) => {
   if (questionId === "animal") {
     if (weight >= 1) {
       state.signals.animal = true;
+      state.signals.humano = false;
     } else if (weight <= -1) {
       state.signals.animal = false;
     }
@@ -327,6 +329,14 @@ const updateSignals = (questionId, weight) => {
       state.signals.animado = false;
     }
   }
+  if (questionId === "humano") {
+    if (weight >= 1) {
+      state.signals.humano = true;
+      state.signals.animal = false;
+    } else if (weight <= -1) {
+      state.signals.humano = false;
+    }
+  }
 };
 
 const matchesCategory = (question) =>
@@ -335,6 +345,20 @@ const matchesCategory = (question) =>
 const meetsRequirements = (question) => {
   if (!question.requires) return true;
   return Object.entries(question.requires).every(([key, value]) => state.signals[key] === value);
+};
+
+const getPriorityQuestion = () => {
+  const ordered = ["real", "animal", "humano", "animado"];
+  for (const id of ordered) {
+    const candidate = questions.find((question) => question.id === id);
+    if (!candidate) continue;
+    if (state.askedIds.has(id)) continue;
+    if (!matchesCategory(candidate) || !meetsRequirements(candidate)) continue;
+    if (id === "animal" && state.signals.humano === true) continue;
+    if (id === "humano" && state.signals.animal === true) continue;
+    return candidate;
+  }
+  return null;
 };
 
 const getAvailableQuestions = () =>
@@ -364,7 +388,13 @@ const scoreQuestion = (question, variance) =>
   );
 
 const selectNextQuestion = () => {
-  const available = getAvailableQuestions();
+  const priority = getPriorityQuestion();
+  if (priority) return priority;
+  const available = getAvailableQuestions().filter((question) => {
+    if (question.id === "animal" && state.signals.humano === true) return false;
+    if (question.id === "humano" && state.signals.animal === true) return false;
+    return true;
+  });
   if (available.length === 0) return null;
   const variance = getTraitVariance(getCandidates());
   return available
@@ -486,6 +516,7 @@ const rebuildSignalsAndAsked = () => {
     animal: null,
     fiction: null,
     animado: null,
+    humano: null,
   };
   initializeProbabilities();
   state.answers.forEach((answer) => {
@@ -617,6 +648,7 @@ const reset = () => {
     animal: null,
     fiction: null,
     animado: null,
+    humano: null,
   };
   initializeProbabilities();
   guessActions.classList.add("hidden");
